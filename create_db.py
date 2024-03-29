@@ -11,20 +11,30 @@ load_dotenv()
 
 FILE_PATH = "amazon_product_kg.json"
 
+class Config:
+    def __init__(self, openai_api_key, neo4j_url, neo4j_username, neo4j_password, data_path):
+        self.openai_api_key = openai_api_key
+        self.neo4j_url = neo4j_url
+        self.neo4j_username = neo4j_username
+        self.neo4j_password = neo4j_password
+        self.data_path = data_path
 
-def set_config(config):
-    config["url"] = "neo4j+s://a27d7ab9.databases.neo4j.io:7687"
-    config["username"] = "neo4j"
-    config["password"] = "UPxug86AK63ZzUQPfLQ4J0MwgD8F5-fhhAgrKxIU6WU"
+def get_config(config):
+    config["openai_api_key"] = os.environ.get("OPENAI_API_KEY")
+    config["neo4j_url"] = os.environ.get("NEO4J_URI")
+    config["neo4j_username"] = os.environ.get("NEO4J_USER")
+    config["neo4j_password"] = os.environ.get("NEO4J_PASSWORD")
+    config["data_path"] = os.environ.get("DATA_PATH")
     return config
 
 
 if __name__ == "__main__":
     config = dict()
-    config = set_config(config)
-    graph = Neo4jGraph(url=config["url"],
-                       username=config["username"],
-                       password=config["password"])
+    config = get_config(config)
+    config = Config(**config)
+    graph = Neo4jGraph(url=config.neo4j_url,
+                       username=config.neo4j_username,
+                       password=config.neo4j_password)
     init_neo4j_db(get_product_json(FILE_PATH), graph)
     graph._driver.close()
     
